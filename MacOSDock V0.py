@@ -221,15 +221,6 @@ class MacOSDock(tk.Tk):
             app_label.bind('<Enter>', lambda e: app_label.config(text=new_name))
             app_label.bind('<Leave>', lambda e: app_label.config(text=new_name))
 
-    # def remove_app(self, app_frame, app_button, app_label):
-    #     app_name = app_button.fullname
-    #     shortcut_path = os.path.join(self.shortcuts_dir, app_name)
-    #     if os.path.exists(shortcut_path):
-    #         os.remove(shortcut_path)
-    #     app_frame.destroy()
-    #     app_button.destroy()
-    #     app_label.destroy()
-
     def remove_app(self, app_frame, app_button, app_label):
         app_name = app_button.fullname
         shortcut_path = os.path.join(self.shortcuts_dir, app_name + '.lnk')  # 確保捷徑檔案名稱正確
@@ -259,6 +250,23 @@ class MacOSDock(tk.Tk):
                 for grandchild in child.winfo_children():
                     grandchild.configure(bg=self.bg_color)
             self.save_settings()  # 儲存設定
+    
+    def change_icon(self, app_button):
+        iconpath = filedialog.askopenfilename(title="選擇圖示檔案")
+        if iconpath:
+            # 使用 asyncio.run 來執行協程並獲取返回值
+            normal_icon = asyncio.run(self.get_icon(iconpath, original=False))
+            app_button.config(image=normal_icon)
+            app_button.image = normal_icon
+
+            # 確保圖示對象不會被垃圾回收
+            if not hasattr(self, 'icons'):
+                self.icons = []
+            self.icons.append(normal_icon)
+
+            # 在滑鼠進入和離開時切換圖示
+            app_button.bind('<Enter>', lambda e: app_button.config(image=normal_icon))
+            app_button.bind('<Leave>', lambda e: app_button.config(image=normal_icon))
 
     def change_opacity(self):
         opacity_window = tk.Toplevel(self)
